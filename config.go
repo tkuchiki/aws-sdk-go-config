@@ -16,7 +16,7 @@ import (
 type Option struct {
 	// AWS Access Key ID
 	AccessKey string
-	// AWS Access Secret Access Key
+	// AWS Secret Access Key
 	SecretKey string
 	// AWS Profile
 	Profile string
