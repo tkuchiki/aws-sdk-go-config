@@ -62,10 +62,18 @@ func GetRegionFromConfigFile(configFile, profile string) (string, error) {
 }
 
 // GetProfiles returns the shared config file section names
-func GetProfiles(configFile string) []string {
+func GetProfiles(configFile ...string) []string {
 	var cfg *ini.File
 	var err error
-	cfg, err = loadIni(configFile)
+	var conf string
+
+	if len(configFile) == 0 {
+		conf = GetSharedCredentialsFile()
+	} else {
+		conf = configFile[0]
+	}
+
+	cfg, err = loadIni(conf)
 
 	if err != nil {
 		return []string{}
@@ -134,7 +142,6 @@ func createConfigPath(filename string) string {
 	}
 
 	// /path/to/homedir/.aws/{config,credentials}
-	fmt.Println(filepath.Join(dir, ".aws", filename))
 	return filepath.Join(dir, ".aws", filename)
 }
 
