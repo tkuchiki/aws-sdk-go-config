@@ -3,7 +3,7 @@
 ---
 
 ```go
-    import "github.com/tkuchiki/aws-sdk-go-config"
+import "github.com/tkuchiki/aws-sdk-go-config"
 ```
 
 ## Usage
