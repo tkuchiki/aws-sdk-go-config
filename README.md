@@ -1,1 +1,1 @@
-# aws-sdk-go-init
+# aws-sdk-go-config
