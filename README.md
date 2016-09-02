@@ -32,7 +32,7 @@ GetProfile returns the profile
 #### func  GetProfiles
 
 ```go
-func GetProfiles(configFile string) []string
+func GetProfiles(configFile ...string) []string
 ```
 GetProfiles returns the shared config file section names
 
