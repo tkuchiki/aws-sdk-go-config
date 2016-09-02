@@ -125,7 +125,7 @@ func GetRegion() string {
 	}
 
 	if region == "" {
-		region, _ = GetRegionFromConfigFile(GetConfigFile(), DefaultProfile)
+		region, _ = GetRegionFromConfigFile(GetSharedConfigFile(), DefaultProfile)
 	}
 
 	if region == "" && os.Getenv("USE_METADATA") != "0" {
@@ -157,8 +157,8 @@ func GetSharedCredentialsFile() string {
 	return creds
 }
 
-// GetConfigFile returns the path to the shared config file
-func GetConfigFile() string {
+// GetSharedConfigFile returns the path to the shared config file
+func GetSharedConfigFile() string {
 	var config string
 	config = os.Getenv("AWS_CONFIG_FILE")
 
@@ -212,7 +212,7 @@ func NewConfig(opt Option) (*aws.Config, error) {
 		if opt.Config != "" {
 			conf = opt.Config
 		} else {
-			conf = GetConfigFile()
+			conf = GetSharedConfigFile()
 		}
 
 		region, err = GetRegionFromConfigFile(conf, profile)
