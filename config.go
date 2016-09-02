@@ -9,7 +9,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/ini.v1"
 	"os"
-	"runtime"
+	"path/filepath"
 )
 
 // Option is AWS Config options
@@ -133,12 +133,9 @@ func createConfigPath(filename string) string {
 		return ""
 	}
 
-	sep := '/'
-	if runtime.GOOS == "windows" {
-		sep = '\\'
-	}
 	// /path/to/homedir/.aws/{config,credentials}
-	return fmt.Sprintf("%s%c.aws%c%s", dir, sep, sep, filename)
+	fmt.Println(filepath.Join(dir, ".aws", filename))
+	return filepath.Join(dir, ".aws", filename)
 }
 
 // GetSharedCredentialsFile returns the path to the shared credentials file
