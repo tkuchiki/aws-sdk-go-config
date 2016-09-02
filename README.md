@@ -110,3 +110,43 @@ type Option struct {
 ```
 
 Option is AWS Config options
+
+## Examples
+
+```go
+package main
+
+import (
+    "github.com/tkuchiki/aws-sdk-go-config"
+    "github.com/aws/aws-sdk-go/aws"
+    "github.com/aws/aws-sdk-go/aws/credentials"
+    "github.com/aws/aws-sdk-go/aws/session"
+    "log"
+)
+
+func main() {
+    var creds *credentials.Credentials
+    var err error
+    creds, err = awsconfig.NewCredentials(awsconfig.Option{})
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var conf *aws.Config
+    conf, err = awsconfig.NewConfig(awsconfig.Option{})
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    var sess *session.Session
+    sess, err = awsconfig.NewSession()
+    //sess, err = awsconfig.NewSession(awsconfig.Option{})
+    //sess, err = awsconfig.NewSession(conf)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //fmt.Println(awsconfig.GetProfiles("/path/to/.aws/credentials"))
+    //fmt.Println(awsconfig.GetProfiles())
+}
+```
