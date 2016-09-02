@@ -15,12 +15,12 @@ const (
 )
 ```
 
-#### func  GetConfigFile
+#### func  GetSharedConfigFile
 
 ```go
-func GetConfigFile() string
+func GetSharedConfigFile() string
 ```
-GetConfigFile returns the path to the shared config file
+GetSharedConfigFile returns the path to the shared config file
 
 #### func  GetProfile
 
