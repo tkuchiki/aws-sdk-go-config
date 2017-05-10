@@ -15,13 +15,6 @@ const (
 )
 ```
 
-#### func  GetSharedConfigFile
-
-```go
-func GetSharedConfigFile() string
-```
-GetSharedConfigFile returns the path to the shared config file
-
 #### func  GetProfile
 
 ```go
@@ -57,6 +50,13 @@ func GetRegionFromInstanceIdentityDocument() string
 ```
 GetRegionFromInstanceIdentityDocument returns the region from the Instance
 Metadata
+
+#### func  GetSharedConfigFile
+
+```go
+func GetSharedConfigFile() string
+```
+GetSharedConfigFile returns the path to the shared config file
 
 #### func  GetSharedCredentialsFile
 
@@ -96,6 +96,8 @@ type Option struct {
 	AccessKey string
 	// AWS Secret Access Key
 	SecretKey string
+	// AssumeRole Arn
+	Arn string
 	// AWS Profile
 	Profile string
 	// Path to the shared config file

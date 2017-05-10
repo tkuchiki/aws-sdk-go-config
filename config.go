@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/mitchellh/go-homedir"
@@ -18,6 +19,8 @@ type Option struct {
 	AccessKey string
 	// AWS Secret Access Key
 	SecretKey string
+	// AssumeRole Arn
+	Arn string
 	// AWS Profile
 	Profile string
 	// Path to the shared config file
@@ -184,6 +187,15 @@ func NewCredentials(opt Option) *credentials.Credentials {
 		creds = credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, opt.Token)
 	} else {
 		creds = credentials.NewSharedCredentials(opt.Credentials, profile)
+	}
+
+	if opt.Arn != "" {
+		c := &aws.Config{
+			Credentials: creds,
+			Region:      aws.String(opt.Region),
+		}
+		sess := session.Must(session.NewSession(c))
+		creds = stscreds.NewCredentials(sess, opt.Arn)
 	}
 
 	return creds
