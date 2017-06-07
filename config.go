@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/ini.v1"
+	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // Option is AWS Config options
@@ -31,6 +34,8 @@ type Option struct {
 	Token string
 	// AWS Region
 	Region string
+	// ExpiryWindow
+	ExpiryWindow time.Duration
 }
 
 const (
@@ -173,9 +178,14 @@ func GetSharedConfigFile() string {
 }
 
 // NewCredentials returns the *credentials.Credentials
-func NewCredentials(opt Option) *credentials.Credentials {
+func NewCredentials(opt Option) (*credentials.Credentials, error) {
 	var creds *credentials.Credentials
 	var profile string
+	var err error
+	var accessKey string
+	var secretKey string
+	var token string
+	var region string
 
 	if opt.Profile == "" {
 		profile = GetProfile()
@@ -183,8 +193,36 @@ func NewCredentials(opt Option) *credentials.Credentials {
 		profile = opt.Profile
 	}
 
-	if opt.AccessKey != "" && opt.SecretKey != "" {
-		creds = credentials.NewStaticCredentials(opt.AccessKey, opt.SecretKey, opt.Token)
+	if opt.Region == "" {
+		region = GetRegion()
+	} else {
+		region = opt.Region
+	}
+
+	if opt.AccessKey == "" && opt.SecretKey == "" && opt.Credentials == "" {
+		sess := session.Must(session.NewSession(&aws.Config{
+			Region: aws.String(region),
+		}))
+
+		p := &ec2rolecreds.EC2RoleProvider{
+			Client: ec2metadata.New(sess, &aws.Config{
+				HTTPClient: &http.Client{Timeout: 10 * time.Second},
+			}),
+			ExpiryWindow: opt.ExpiryWindow,
+		}
+		var val credentials.Value
+		val, err = p.Retrieve()
+		accessKey = val.AccessKeyID
+		secretKey = val.SecretAccessKey
+		token = val.SessionToken
+	} else if opt.AccessKey != "" && opt.SecretKey != "" {
+		accessKey = opt.AccessKey
+		secretKey = opt.SecretKey
+		token = opt.Token
+	}
+
+	if accessKey != "" && secretKey != "" {
+		creds = credentials.NewStaticCredentials(accessKey, secretKey, token)
 	} else {
 		creds = credentials.NewSharedCredentials(opt.Credentials, profile)
 	}
@@ -192,13 +230,13 @@ func NewCredentials(opt Option) *credentials.Credentials {
 	if opt.Arn != "" {
 		c := &aws.Config{
 			Credentials: creds,
-			Region:      aws.String(opt.Region),
+			Region:      aws.String(region),
 		}
 		sess := session.Must(session.NewSession(c))
 		creds = stscreds.NewCredentials(sess, opt.Arn)
 	}
 
-	return creds
+	return creds, err
 }
 
 // NewConfig returns the *aws.Config
@@ -209,7 +247,10 @@ func NewConfig(opt Option) (*aws.Config, error) {
 	var region string
 	var profile string
 
-	creds = NewCredentials(opt)
+	creds, err = NewCredentials(opt)
+	if err != nil {
+		return c, err
+	}
 
 	if opt.Profile == "" {
 		profile = GetProfile()

@@ -75,7 +75,7 @@ NewConfig returns the *aws.Config
 #### func  NewCredentials
 
 ```go
-func NewCredentials(opt Option) *credentials.Credentials
+func NewCredentials(opt Option) (*credentials.Credentials, error)
 ```
 NewCredentials returns the *credentials.Credentials
 
@@ -108,6 +108,8 @@ type Option struct {
 	Token string
 	// AWS Region
 	Region string
+    // ExpiryWindow
+    ExpiryWindow time.Duration
 }
 ```
 
