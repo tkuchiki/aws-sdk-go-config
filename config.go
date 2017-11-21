@@ -157,9 +157,7 @@ func createConfigPath(filename string) string {
 
 // GetSharedCredentialsFile returns the path to the shared credentials file
 func GetSharedCredentialsFile() string {
-	var creds string
-	creds = os.Getenv("AWS_SHARED_CREDENTIALS_FILE")
-
+	creds := os.Getenv("AWS_SHARED_CREDENTIALS_FILE")
 	if creds == "" {
 		creds = createConfigPath("credentials")
 	}
@@ -169,9 +167,7 @@ func GetSharedCredentialsFile() string {
 
 // GetSharedConfigFile returns the path to the shared config file
 func GetSharedConfigFile() string {
-	var config string
-	config = os.Getenv("AWS_CONFIG_FILE")
-
+	config := os.Getenv("AWS_CONFIG_FILE")
 	if config == "" {
 		config = createConfigPath("config")
 	}
