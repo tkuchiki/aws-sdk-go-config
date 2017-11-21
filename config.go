@@ -2,6 +2,12 @@ package awsconfig
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
@@ -10,10 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/ini.v1"
-	"net/http"
-	"os"
-	"path/filepath"
-	"time"
 )
 
 // Option is AWS Config options
@@ -97,13 +99,15 @@ func GetProfiles(configFile ...string) []string {
 	return sections
 }
 
+func isLoadConfig() bool {
+	return os.Getenv("AWS_SDK_LOAD_CONFIG") == "1" || strings.ToLower(os.Getenv("AWS_SDK_LOAD_CONFIG")) == "true"
+}
+
 // GetProfile returns the profile
 func GetProfile() string {
-	var profile string
-	if os.Getenv("AWS_SDK_LOAD_CONFIG") == "1" {
+	profile := os.Getenv("AWS_PROFILE")
+	if isLoadConfig() && profile == "" {
 		profile = os.Getenv("AWS_DEFAULT_PROFILE")
-	} else {
-		profile = os.Getenv("AWS_PROFILE")
 	}
 
 	if profile == "" {
@@ -125,11 +129,9 @@ func GetRegionFromInstanceIdentityDocument() string {
 
 // GetRegion returns the region
 func GetRegion() string {
-	var region string
-	if os.Getenv("AWS_SDK_LOAD_CONFIG") == "1" {
+	region := os.Getenv("AWS_REGION")
+	if isLoadConfig() && region == "" {
 		region = os.Getenv("AWS_DEFAULT_REGION")
-	} else {
-		region = os.Getenv("AWS_REGION")
 	}
 
 	if region == "" {
