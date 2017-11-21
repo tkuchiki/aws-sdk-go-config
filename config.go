@@ -179,11 +179,12 @@ func GetSharedConfigFile() string {
 func NewCredentials(opt Option) (*credentials.Credentials, error) {
 	var creds *credentials.Credentials
 	var profile string
-	var err error
 	var accessKey string
 	var secretKey string
 	var token string
 	var region string
+	var credsPath string
+	var err error
 
 	if opt.Profile == "" {
 		profile = GetProfile()
@@ -197,7 +198,30 @@ func NewCredentials(opt Option) (*credentials.Credentials, error) {
 		region = opt.Region
 	}
 
-	if opt.AccessKey == "" && opt.SecretKey == "" && opt.Credentials == "" {
+	env, err := credentials.NewEnvCredentials().Get()
+	if err != nil {
+		return creds, err
+	}
+
+	if opt.AccessKey == "" {
+		accessKey = env.AccessKeyID
+	} else {
+		accessKey = opt.AccessKey
+	}
+
+	if opt.SecretKey == "" {
+		secretKey = env.SecretAccessKey
+	} else {
+		secretKey = opt.SecretKey
+	}
+
+	if opt.Token == "" {
+		token = env.SessionToken
+	} else {
+		token = opt.Token
+	}
+
+	if accessKey == "" && secretKey == "" {
 		sess := session.Must(session.NewSession(&aws.Config{
 			Region: aws.String(region),
 		}))
@@ -213,17 +237,26 @@ func NewCredentials(opt Option) (*credentials.Credentials, error) {
 		accessKey = val.AccessKeyID
 		secretKey = val.SecretAccessKey
 		token = val.SessionToken
-	} else if opt.AccessKey != "" && opt.SecretKey != "" {
-		accessKey = opt.AccessKey
-		secretKey = opt.SecretKey
-		token = opt.Token
 	}
 
-	if accessKey != "" && secretKey != "" {
-		creds = credentials.NewStaticCredentials(accessKey, secretKey, token)
-	} else {
-		creds = credentials.NewSharedCredentials(opt.Credentials, profile)
+	sharedCreds := &credentials.SharedCredentialsProvider{
+		Filename: credsPath,
+		Profile:  profile,
 	}
+
+	staticCreds := &credentials.StaticProvider{
+		Value: credentials.Value{
+			AccessKeyID:     accessKey,
+			SecretAccessKey: secretKey,
+			SessionToken:    token,
+		},
+	}
+
+	creds = credentials.NewChainCredentials(
+		[]credentials.Provider{
+			staticCreds,
+			sharedCreds,
+		})
 
 	if opt.Arn != "" {
 		c := &aws.Config{
