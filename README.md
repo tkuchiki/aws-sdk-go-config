@@ -32,7 +32,7 @@ GetProfiles returns the shared config file section names
 #### func  GetRegion
 
 ```go
-func GetRegion() string
+func GetRegion(profile string) string
 ```
 GetRegion returns the region
 

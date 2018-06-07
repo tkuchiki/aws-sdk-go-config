@@ -128,14 +128,17 @@ func GetRegionFromInstanceIdentityDocument() string {
 }
 
 // GetRegion returns the region
-func GetRegion() string {
+func GetRegion(profile string) string {
 	region := os.Getenv("AWS_REGION")
 	if isLoadConfig() && region == "" {
 		region = os.Getenv("AWS_DEFAULT_REGION")
 	}
 
 	if region == "" {
-		region, _ = GetRegionFromConfigFile(GetSharedConfigFile(), DefaultProfile)
+		if profile == "" {
+			profile = DefaultProfile
+		}
+		region, _ = GetRegionFromConfigFile(GetSharedConfigFile(), profile)
 	}
 
 	if region == "" && os.Getenv("USE_METADATA") != "0" {
@@ -193,7 +196,7 @@ func NewCredentials(opt Option) (*credentials.Credentials, error) {
 	}
 
 	if opt.Region == "" {
-		region = GetRegion()
+		region = GetRegion(profile)
 	} else {
 		region = opt.Region
 	}
@@ -292,21 +295,7 @@ func NewConfig(opt Option) (*aws.Config, error) {
 	if opt.Region != "" {
 		region = opt.Region
 	} else {
-		var conf string
-		if opt.Config != "" {
-			conf = opt.Config
-		} else {
-			conf = GetSharedConfigFile()
-		}
-
-		region, err = GetRegionFromConfigFile(conf, profile)
-		if err != nil {
-			return c, err
-		}
-
-		if region == "" {
-			region = GetRegionFromInstanceIdentityDocument()
-		}
+		region = GetRegion(profile)
 	}
 
 	c = &aws.Config{
