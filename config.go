@@ -201,18 +201,15 @@ func NewCredentials(opt Option) (*credentials.Credentials, error) {
 		region = opt.Region
 	}
 
-	env, err := credentials.NewEnvCredentials().Get()
-	if err != nil {
-		return creds, err
-	}
+	env, _ := credentials.NewEnvCredentials().Get()
 
-	if opt.AccessKey == "" {
+	if env.AccessKeyID != "" {
 		accessKey = env.AccessKeyID
 	} else {
 		accessKey = opt.AccessKey
 	}
 
-	if opt.SecretKey == "" {
+	if env.SecretAccessKey != "" {
 		secretKey = env.SecretAccessKey
 	} else {
 		secretKey = opt.SecretKey
